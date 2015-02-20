@@ -6,7 +6,7 @@ This project is a Docker container for [Consul](http://www.consul.io/). It's a s
 
 The container is very small (50MB virtual, based on [Busybox](https://github.com/progrium/busybox)) and available on the Docker Index:
 
-	$ docker pull progrium/consul
+	$ docker pull vimdon/consul
 
 ## Using the container
 
@@ -14,11 +14,11 @@ The container is very small (50MB virtual, based on [Busybox](https://github.com
 
 If you just want to run a single instance of Consul Agent to try out its functionality:
 
-	$ docker run -p 8400:8400 -p 8500:8500 -p 8600:53/udp -h node1 progrium/consul -server -bootstrap
+	$ docker run -p 8400:8400 -p 8500:8500 -p 8600:53/udp -h node1 vimond/consul -server -bootstrap
 
 The [Web UI](http://www.consul.io/intro/getting-started/ui.html) can be enabled by adding the `-ui-dir` flag:
 
-	$ docker run -p 8400:8400 -p 8500:8500 -p 8600:53/udp -h node1 progrium/consul -server -bootstrap -ui-dir /ui
+	$ docker run -p 8400:8400 -p 8500:8500 -p 8600:53/udp -h node1 vimond/consul -server -bootstrap -ui-dir /ui
 
 We publish 8400 (RPC), 8500 (HTTP), and 8600 (DNS) so you can try all three interfaces. We also give it a hostname of `node1`. Setting the container hostname is the intended way to name the Consul Agent node. 
 
@@ -40,7 +40,7 @@ If you want to start a Consul cluster on a single host to experiment with cluste
 
 Here we start the first node not with `-bootstrap`, but with `-bootstrap-expect 3`, which will wait until there are 3 peers connected before self-bootstrapping and becoming a working cluster.
 
-	$ docker run -d --name node1 -h node1 progrium/consul -server -bootstrap-expect 3
+	$ docker run -d --name node1 -h node1 vimond/consul -server -bootstrap-expect 3
 
 We can get the container's internal IP by inspecting the container. We'll put it in the env var `JOIN_IP`.
 
@@ -48,7 +48,7 @@ We can get the container's internal IP by inspecting the container. We'll put it
 
 Then we'll start `node2` and tell it to join `node1` using `$JOIN_IP`:
 
-	$ docker run -d --name node2 -h node2 progrium/consul -server -join $JOIN_IP
+	$ docker run -d --name node2 -h node2 vimond/consul -server -join $JOIN_IP
 
 Now we can start `node3` the same way:
 
@@ -58,7 +58,7 @@ We now have a real three node cluster running on a single host. Notice we've als
 
 We haven't published any ports to access the cluster, but we can use that as an excuse to run a fourth agent node in "client" mode (dropping the `-server`). This means it doesn't participate in the consensus quorum, but can still be used to interact with the cluster. It also means it doesn't need disk persistence.
 
-	$ docker run -d -p 8400:8400 -p 8500:8500 -p 8600:53/udp --name node4 -h node4 progrium/consul -join $JOIN_IP
+	$ docker run -d -p 8400:8400 -p 8500:8500 -p 8600:53/udp --name node4 -h node4 vimond/consul -join $JOIN_IP
 
 Now we can interact with the cluster on those published ports and, if you want, play with killing, adding, and restarting nodes to see how the cluster handles it.
 
@@ -82,7 +82,7 @@ Assuming we're on a host with a private IP of 10.0.1.1 and the IP of docker brid
 		-p 10.0.1.1:8400:8400 \
 		-p 10.0.1.1:8500:8500 \
 		-p 172.17.42.1:53:53/udp \
-		progrium/consul -server -advertise 10.0.1.1 -bootstrap-expect 3
+		vimond/consul -server -advertise 10.0.1.1 -bootstrap-expect 3
 
 On the second host, we'd run the same thing, but passing a `-join` to the first node's IP. Let's say the private IP for this host is 10.0.1.2:
 
@@ -95,7 +95,7 @@ On the second host, we'd run the same thing, but passing a `-join` to the first 
 		-p 10.0.1.2:8400:8400 \
 		-p 10.0.1.2:8500:8500 \
 		-p 172.17.42.1:53:53/udp \
-		progrium/consul -server -advertise 10.0.1.2 -join 10.0.1.1
+		vimond/consul -server -advertise 10.0.1.2 -join 10.0.1.1
 
 And the third host with an IP of 10.0.1.3:
 
@@ -108,7 +108,7 @@ And the third host with an IP of 10.0.1.3:
 		-p 10.0.1.3:8400:8400 \
 		-p 10.0.1.3:8500:8500 \
 		-p 172.17.42.1:53:53/udp \
-		progrium/consul -server -advertise 10.0.1.3 -join 10.0.1.1
+		vimond/consul -server -advertise 10.0.1.3 -join 10.0.1.1
 
 That's it! Once this last node connects, it will bootstrap into a cluster. You now have a working cluster running in production on a private network.
 
@@ -132,7 +132,7 @@ Outputs:
 		-p 10.0.1.1:8500:8500 \
 		-p 172.17.42.1:53:53/udp \
 		-d 	\
-		progrium/consul -server -advertise 10.0.1.1 -bootstrap-expect 3
+		vimond/consul -server -advertise 10.0.1.1 -bootstrap-expect 3
 
 By design, it will set the hostname of the container to your host hostname, it will name the container `consul` (though this can be overridden), it will bind port 53 to the Docker bridge, and the rest of the ports on the advertise IP. If no join IP is provided, it runs in `-bootstrap-expect` mode with a default of 3 expected peers. Here is another example, specifying a join IP and setting more docker run arguments:
 
@@ -150,13 +150,13 @@ Outputs:
 		-p 10.0.1.1:8500:8500 \
 		-p 172.17.42.1:53:53/udp \
 		-d -v /mnt:/data \
-		progrium/consul -server -advertise 10.0.1.1 -join 10.0.1.2
+		vimond/consul -server -advertise 10.0.1.1 -join 10.0.1.2
 
 You may notice it lets you only run with bootstrap-expect or join, not both. Using `cmd:run` assumes you will be bootstrapping with the first node and expecting 3 nodes. You can change the expected peers before bootstrap by setting the `EXPECT` environment variable.
 
 To use this convenience, you simply wrap the `cmd:run` output in a subshell. Run this to see it work:
 
-	$ $(docker run --rm progrium/consul cmd:run 127.0.0.1 -it)
+	$ $(docker run --rm vimond/consul cmd:run 127.0.0.1 -it)
 
 ##### Client flag
 
@@ -164,7 +164,7 @@ Client nodes allow you to keep growing your cluster without impacting the perfor
 
 To boot a client node using the runner command, append the string `::client` onto the `<advertise-ip>::<join-ip>` argument.  For example:
 
-	$ docker run --rm progrium/consul cmd:run 10.0.1.4::10.0.1.2::client -d
+	$ docker run --rm vimond/consul cmd:run 10.0.1.4::10.0.1.2::client -d
 
 Would create the same output as above but without the `-server` consul argument.
 

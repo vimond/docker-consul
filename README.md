@@ -6,7 +6,7 @@ This project is a Docker container for [Consul](http://www.consul.io/). It's a s
 
 The container is very small (50MB virtual, based on [Busybox](https://github.com/progrium/busybox)) and available on the Docker Index:
 
-	$ docker pull vimdon/consul
+	$ docker pull vimond/consul
 
 ## Using the container
 

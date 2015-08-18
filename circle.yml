@@ -2,7 +2,7 @@ machine:
   services:
     - docker
   environment:
-    - IMAGE_NAME: docker-consul
+    IMAGE_NAME: docker-consul
 
 dependencies:
   cache_directories:
